@@ -36,7 +36,7 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
                 exptoken += bytes({i})
                 exptoken += bytes(1)
         tokenstruct = struct.pack("=i", len(exptoken)) + exptoken  
-        conn = pyodbc.connect("Driver={ODBC Driver 17 for SQL Server};Server=tcp:{},1433;Database={}".format(sql_server,sql_database), attrs_before = { 1256:bytearray(tokenstruct) })
+        conn = pyodbc.connect("Driver={ODBC Driver 13 for SQL Server};Server=tcp:{},1433;Database={}".format(sql_server,sql_database), attrs_before = { 1256:bytearray(tokenstruct) })
         logging.info('connected to {} on {}'.format(sql_server,sql_database))
         cursor = conn.cursor()
         cursor.execute("select @@version")
