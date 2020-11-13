@@ -11,7 +11,7 @@ variables:
   azureSubscription: 'e71ad01d-e4d0-4308-a4dd-078e077c79ad'
 
   # Function app name
-  functionAppName: 'cis5800-team5'
+  functionAppName: 'subtracker-api'
 
   # Agent VM image name
   vmImageName: 'ubuntu-latest'
