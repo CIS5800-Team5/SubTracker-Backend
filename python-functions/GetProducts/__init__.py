@@ -47,16 +47,3 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
         logging.info('An exception occurred: {}'.format(error))   
     return func.HttpResponse("done!")
 
-def main(req: func.HttpRequest) -> func.HttpResponse:
-    products = [
-        {
-            "name": "Subtracker Subscription",
-            "price": 4.99
-        },
-        {
-            "name": "Azure Functions",
-            "price": 0.01
-        }
-    ]
-
-    return func.HttpResponse(json.dumps(products))
