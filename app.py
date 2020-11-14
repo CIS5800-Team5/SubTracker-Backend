@@ -1,13 +1,7 @@
 from flask import Flask
 from flask import request, jsonify
-
-import logging
-import os
 import pyodbc
-import requests 
-import struct
-import sys
-import azure.functions as func
+
 
 resource_uri="https://database.windows.net/"
 sql_server="subtracker.database.windows.net"
@@ -39,6 +33,15 @@ books = [
 def home():
     return '''<h1>Distant Reading Archive</h1>
 <p>A prototype API for distant reading of science fiction novels.</p>'''
+
+@app.route('/api/services/all', methods=['GET'])
+def get():
+    con = pyodbc.connect('DRIVER={ODBC Driver 17 for SQL Server};SERVER=tcp:'sql_server',1433;DATABASE='sql_database';UID='sql_user';PWD='sql_password)
+    cur=con.cursor()
+    cur.execute('''select * from services''')
+    r = [dict((cur.description[i][0], value)
+              for i, value in enumerate(row)) for row in cur.fetchall()]
+    return jsonify(r)
 
 @app.route('/api/v1/resources/books/all', methods=['GET'])
 def api_all():
