@@ -39,7 +39,7 @@ def get():
     con = pyodbc.connect('DRIVER={ODBC Driver 17 for SQL Server};SERVER=tcp:'sql_server',1433;DATABASE='sql_database';UID='sql_user';PWD='sql_password)
     cur=con.cursor()
     cur.execute('''select * from services''')
-    r = [dict((cur.description[i][0], value)
+    r = [dict((cur.service_name[i][0], value)
               for i, value in enumerate(row)) for row in cur.fetchall()]
     return jsonify(r)
 
