@@ -82,6 +82,7 @@ stages:
           - task: AzureWebApp@1
             displayName: 'Deploy Azure Web App : subtracker-api'
             inputs:
+              sql_password: '$(sql_password)'
               azureSubscription: $(azureServiceConnectionId)
               appName: $(webAppName)
               package: $(Pipeline.Workspace)/drop/$(Build.BuildId).zip
