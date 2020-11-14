@@ -1,33 +1,11 @@
 from flask import Flask
 from flask import request, jsonify
-import pyodbc
+import mysql.connector
 
-
-resource_uri="https://database.windows.net/"
-sql_server="subtracker.database.windows.net"
-sql_database="subtracker"
+mysql_server="subtracker-db.mysql.database.azure.com"
+sql_database="subtracker_api"
 
 app = Flask(__name__)
-
-# Create some test data for our catalog in the form of a list of dictionaries.
-books = [
-    {'id': 0,
-     'title': 'A Fire Upon the Deep',
-     'author': 'Vernor Vinge',
-     'first_sentence': 'The coldsleep itself was dreamless.',
-     'year_published': '1992'},
-    {'id': 1,
-     'title': 'The Ones Who Walk Away From Omelas',
-     'author': 'Ursula K. Le Guin',
-     'first_sentence': 'With a clamor of bells that set the swallows soaring, the Festival of Summer came to the city Omelas, bright-towered by the sea.',
-     'published': '1973'},
-    {'id': 2,
-     'title': 'Dhalgren',
-     'author': 'Samuel R. Delany',
-     'first_sentence': 'to wound the autumnal city.',
-     'published': '1975'}
-]
-
 
 @app.route('/', methods=['GET'])
 def home():
@@ -36,8 +14,8 @@ def home():
 
 @app.route('/api/services/all', methods=['GET'])
 def get():
-    con = pyodbc.connect('DRIVER={ODBC Driver 17 for SQL Server};SERVER=tcp:'+sql_server+',1433;DATABASE='+sql_database+';UID='+sql_user+';PWD='+sql_password)
-    cur=con.cursor()
+    cnx = mysql.connector.connect(user="sql_admin", password=sql_password, host="subtracker-db.mysql.database.azure.com", port=3306, database="subtracker_api", ssl_ca="./DigiCertGlobalRootCA.crt.pem")
+    cursor = cnx.cursor()
     cur.execute('''select * from services''')
     r = [dict((cur.service_name[i][0], value)
               for i, value in enumerate(row)) for row in cur.fetchall()]

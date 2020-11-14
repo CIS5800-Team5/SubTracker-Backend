@@ -1,12 +1,6 @@
 Flask>=1.1.2
-azure-functions
-certifi
-chardet==3.0.4
-colorama
 idna
 isort
-mccabe==0.6.1
-pyodbc==4.0.30
 requests
-six==1.15.0
 urllib3
+mysql-connector
