@@ -85,9 +85,7 @@ stages:
       displayName: 'Install prerequisites'
     - script: |
         echo install pip requirements
-        source ./antenv/bin/activate
-        pip install -r requirements.txt
-        deactivate
+        pip3 install -r requirements.txt
       displayName: 'Install pip requirements'
   - deployment: DeploymentJob
     pool:
