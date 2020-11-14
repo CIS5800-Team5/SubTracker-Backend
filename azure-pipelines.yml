@@ -83,6 +83,12 @@ stages:
         odbcinst --j
         odbcinst -q -d -n "ODBC Driver 17 for SQL Server"
       displayName: 'Install prerequisites'
+    - script: |
+        echo install pip requirements
+        source ./antenv/bin/activate
+        pip install -r requirements.txt
+        deactivate
+      displayName: 'Install pip requirements'
   - deployment: DeploymentJob
     pool:
       vmImage: $(vmImageName)
