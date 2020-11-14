@@ -36,7 +36,7 @@ def home():
 
 @app.route('/api/services/all', methods=['GET'])
 def get():
-    con = pyodbc.connect('DRIVER={ODBC Driver 17 for SQL Server};SERVER=tcp:'sql_server',1433;DATABASE='sql_database';UID='sql_user';PWD='sql_password)
+    con = pyodbc.connect('DRIVER={ODBC Driver 17 for SQL Server};SERVER=tcp:'+sql_server+',1433;DATABASE='+sql_database+';UID='+sql_user+';PWD='+sql_password)
     cur=con.cursor()
     cur.execute('''select * from services''')
     r = [dict((cur.service_name[i][0], value)
