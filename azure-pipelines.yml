@@ -65,28 +65,6 @@ stages:
   dependsOn: Build
   condition: succeeded()
   jobs:
-  - job: InstallReqs
-    steps:
-    - script: |
-        echo install ODBC and dependencies
-        sudo apt-get purge unixodbc
-        sudo apt autoremove
-        sudo curl https://packages.microsoft.com/keys/microsoft.asc | apt-key add -
-        curl https://packages.microsoft.com/config/ubuntu/18.04/prod.list > mssql-release.list
-        sudo mv mssql-release.list /etc/apt/sources.list.d/
-        sudo apt-get update
-        sudo ACCEPT_EULA=Y apt-get install msodbcsql17 mssql-tools
-        echo 'export PATH="$PATH:/opt/mssql-tools/bin"' >> ~/.bash_profile
-        echo 'export PATH="$PATH:/opt/mssql-tools/bin"' >> ~/.bashrc
-        source ~/.bashrc
-        sudo apt-get install unixodbc
-        odbcinst --j
-        odbcinst -q -d -n "ODBC Driver 17 for SQL Server"
-      displayName: 'Install prerequisites'
-    - script: |
-        echo install pip requirements
-        pip3 install -r requirements.txt
-      displayName: 'Install pip requirements'
   - deployment: DeploymentJob
     pool:
       vmImage: $(vmImageName)
