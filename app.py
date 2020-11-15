@@ -1,9 +1,14 @@
 from flask import Flask
 from flask import request, jsonify
 import mysql.connector
+import pymysql
 
 mysql_server="subtracker-db.mysql.database.azure.com"
 sql_database="subtracker_api"
+sql_user='sql_admin'
+sql_pass=os.environ['sql_pass']
+
+cnx = pymysql.connect(user=sql_user, passwd=sql_pass, host=mysql_server, database=sql_database,ssl={'ca': 'DigiCertGlobalRootCA.crt.pem'})
 
 app = Flask(__name__)
 
@@ -13,38 +18,133 @@ def home():
 <p>A prototype API for distant reading of science fiction novels.</p>'''
 
 @app.route('/api/services/all', methods=['GET'])
-def get():
-    cnx = mysql.connector.connect(user="sql_admin", password=sql_password, host="subtracker-db.mysql.database.azure.com", port=3306, database="subtracker_api", ssl_ca="./DigiCertGlobalRootCA.crt.pem")
-    cursor = cnx.cursor()
+def get_services_all():
+    cur = cnx.cursor()
     cur.execute('''select * from services''')
-    r = [dict((cur.service_name[i][0], value)
-              for i, value in enumerate(row)) for row in cur.fetchall()]
-    return jsonify(r)
+    data = [dict((cur.description[idx][0], value) 
+                for idx, value in enumerate(row)) for row in cur.fetchall()]
+    return jsonify(data)
 
-@app.route('/api/v1/resources/books/all', methods=['GET'])
-def api_all():
-    return jsonify(books)
+@app.route('/api/services/search', methods=['GET'])
+def get_services():
+    query_parameters = request.args
+
+    service_id = query_parameters.get('service_id')
+    service_name = query_parameters.get('service_name')
+
+    query = "SELECT * FROM services WHERE"
+    to_filter = []
+
+    if service_id:
+        query += ' service_id=%s AND'
+        to_filter.append(service_id)
+    if service_name:
+        query += ' service_name=%s AND'
+        to_filter.append(service_name)
+    if not (id or name):
+        return page_not_found(404)
+
+    query = query[:-3] + ';'
+    cur = cnx.cursor()
+    cur.execute(query, to_filter)
+    data = [dict((cur.description[idx][0], value) 
+                for idx, value in enumerate(row)) for row in cur.fetchall()]
+    return jsonify(data)
+    #return str(query)
+
+@app.route('/api/subscriptions', methods=['GET'])
+def get_subscriptions():
+    cur = cnx.cursor()
+    cur.execute('''select * from subscriptions''')
+    data = [dict((cur.description[idx][0], value) 
+                for idx, value in enumerate(row)) for row in cur.fetchall()]
+    return jsonify(data)
+
+@app.route('/api/customers/all', methods=['GET'])
+def get_customers_all():
+    cur = cnx.cursor()
+    cur.execute('''select * from customers''')
+    data = [dict((cur.description[idx][0], value) 
+                for idx, value in enumerate(row)) for row in cur.fetchall()]
+    return jsonify(data)
+
+@app.route('/api/customers/search', methods=['GET'])
+def get_customers():
+    query_parameters = request.args
+
+    customer_id = query_parameters.get('customer_id')
+    customer_email = query_parameters.get('customer_email')
+    customer_phone = query_parameters.get('customer_phone')
+    customer_status = query_parameters.get('customer_status')
+
+    query = "SELECT * FROM services WHERE"
+    to_filter = []
+
+    if customer_id:
+        query += ' customer_id=%s AND'
+        to_filter.append(customer_id)
+    if customer_email:
+        query += ' customer_email=%s AND'
+        to_filter.append(customer_email)
+    if customer_phone:
+        query += ' customer_phone=%s AND'
+        to_filter.append(customer_phone)
+    if customer_status:
+        query += ' customer_status=%s AND'
+        to_filter.append(customer_status)
+    if not (customer_id or customer_email or customer_phone):
+        return page_not_found(404)
+
+    query = query[:-3] + ';'
+    cur = cnx.cursor()
+    cur.execute(query, to_filter)
+    data = [dict((cur.description[idx][0], value) 
+                for idx, value in enumerate(row)) for row in cur.fetchall()]
+    return jsonify(data)
+    #return str(query)
+
+@app.route('/api/customers/create', methods=['GET']) ##This should be a POST 
+def create_customers():
+    query_parameters = request.args
+
+    customer_oauth_id = query_parameters.get('customer_oauth_id')
+    customer_email = query_parameters.get('customer_email')
+    customer_phone = query_parameters.get('customer_phone')
+    customer_status = query_parameters.get('customer_status')
+    customer_firstname = query_parameters.get('customer_firstname')
+    customer_lastname = query_parameters.get('customer_lastname')
+
+    query = "INSERT INTO customers Values ("
+    to_filter = []
+
+    if customer_email:
+        query += ' customer_email, '
+        to_filter.append(customer_email)
+    if customer_oauth_id:
+        query += ' customer_oauth_id, '
+        to_filter.append(customer_oauth_id)
+    if customer_firstname:
+        query += ' customer_firstname, '
+        to_filter.append(customer_firstname)
+    if customer_lastname:
+        query += ' customer_lastname, '
+        to_filter.append(customer_lastname)
+    if customer_phone:
+        query += ' customer_phone, '
+        to_filter.append(customer_phone)
+    if customer_status:
+        query += ' customer_status, '
+        to_filter.append(customer_status)
+    if not (customer_oauth_id or customer_email or customer_firstname or customer_lastname):
+        return page_not_found(404)
+
+    query = query[:-2] + ')'
+    cur = cnx.cursor()
+    #cur.execute(query, to_filter)
+    #data = [dict((cur.description[idx][0], value) 
+    #            for idx, value in enumerate(row)) for row in cur.fetchall()]
+    #return jsonify(data)
+    return str(query)
 
 
-@app.route('/api/v1/resources/books', methods=['GET'])
-def api_id():
-    # Check if an ID was provided as part of the URL.
-    # If ID is provided, assign it to a variable.
-    # If no ID is provided, display an error in the browser.
-    if 'id' in request.args:
-        id = int(request.args['id'])
-    else:
-        return "Error: No id field provided. Please specify an id."
-
-    # Create an empty list for our results
-    results = []
-
-    # Loop through the data and match results that fit the requested ID.
-    # IDs are unique, but other fields might return many results
-    for book in books:
-        if book['id'] == id:
-            results.append(book)
-
-    # Use the jsonify function from Flask to convert our list of
-    # Python dictionaries to the JSON format.
-    return jsonify(results)
+  #  http://127.0.0.1:5000/api/customers/create?customer_firstname=Jason&customer_lastname=Semon&customer_email=jason.semon@gmail.com&customer_oauth_id=1233456789
