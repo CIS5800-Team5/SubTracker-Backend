@@ -2,6 +2,7 @@ from flask import Flask
 from flask import request, jsonify
 import mysql.connector
 import pymysql
+import os
 
 mysql_server="subtracker-db.mysql.database.azure.com"
 sql_database="subtracker_api"
