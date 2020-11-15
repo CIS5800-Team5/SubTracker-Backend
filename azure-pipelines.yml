@@ -25,6 +25,9 @@ variables:
   # Python version: 3.7
   pythonVersion: '3.7'
 
+  sqlPassword: 'Test'
+
+
 stages:
 - stage: Build
   displayName: Build stage
@@ -33,6 +36,7 @@ stages:
     pool:
       vmImage: $(vmImageName)
     steps:
+
     - task: UsePythonVersion@0
       inputs:
         versionSpec: '$(pythonVersion)'
@@ -44,6 +48,7 @@ stages:
         python -m pip install --upgrade pip
         pip install setup
         pip install -r requirements.txt
+        python -c   'import os; print(os.environ)'
       workingDirectory: $(projectRoot)
       displayName: "Install requirements"
 
