@@ -25,7 +25,7 @@ variables:
   # Python version: 3.7
   pythonVersion: '3.7'
 
-  sql_password: $env:sql_pass
+  sql_password: 'Test'
 
 
 stages:
