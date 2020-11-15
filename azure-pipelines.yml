@@ -36,22 +36,14 @@ stages:
     pool:
       vmImage: $(vmImageName)
     steps:
-    
-    - task: PowerShell@2
-      displayName: Add the username as an environment variable so the tests can find it.
-      inputs:
-        targetType: 'inline'
-        script: |
-          Write-Host "Making the sql_password available as an environment variable."
-          Write-Host "##vso[task.setvariable variable=sql_password;]$(sql_pass)"
 
     - task: PowerShell@2
       displayName: Show variable value
       inputs:
         targetType: 'inline'
         script: |
-          [string] $sql_password= $Env:sql_password
-          Write-Host "The environment variable value is '$sql_password'."
+          [string] $sql_password= $Env:sql_pass
+          Write-Host "The environment variable value is '$sql_pass'."
 
     - task: UsePythonVersion@0
       inputs:
