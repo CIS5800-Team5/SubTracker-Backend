@@ -58,6 +58,8 @@ stages:
         python -c   'import os; print(os.environ)'
       workingDirectory: $(projectRoot)
       displayName: "Install requirements"
+      inputs:
+        sql_pass: $(sql_pass)
 
     - task: ArchiveFiles@2
       displayName: 'Archive files'
