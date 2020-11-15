@@ -42,7 +42,6 @@ stages:
       inputs:
         targetType: 'inline'
         script: |
-          [string] $sql_password= $Env:sql_pass
           Write-Host "The environment variable value is $(sql_pass)"
 
     - task: UsePythonVersion@0
