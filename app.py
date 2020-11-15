@@ -1,6 +1,5 @@
 from flask import Flask
 from flask import request, jsonify
-import mysql.connector
 import pymysql
 import os
 
@@ -15,8 +14,8 @@ app = Flask(__name__)
 
 @app.route('/', methods=['GET'])
 def home():
-    return '''<h1>Distant Reading Archive</h1>
-<p>A prototype API for distant reading of science fiction novels.</p>'''
+    return '''<h1>Subtracker API</h1>
+<p>An API for using the subtracker application</p>'''
 
 @app.route('/api/services/all', methods=['GET'])
 def get_services_all():
