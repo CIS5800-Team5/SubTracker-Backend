@@ -40,6 +40,8 @@ stages:
       inputs:
         versionSpec: '$(pythonVersion)'
       displayName: 'Use Python $(pythonVersion)'
+    - bash: echo "##vso[task.setvariable variable=sql_password;]$(env:sql_pass)"
+      displayName: Set new variable value
     
     - script: |
         python -m venv antenv
