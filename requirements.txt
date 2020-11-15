@@ -4,3 +4,4 @@ isort
 requests
 urllib3
 mysql-connector
+pymysql
