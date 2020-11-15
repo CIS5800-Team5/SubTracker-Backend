@@ -39,6 +39,7 @@ stages:
       displayName: 'Use Python $(pythonVersion)'
     
     - script: |
+        rm -rf .env
         python -m venv antenv
         source antenv/bin/activate
         python -m pip install --upgrade pip
