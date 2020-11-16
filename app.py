@@ -2,13 +2,17 @@ from flask import Flask
 from flask import request, jsonify
 import pymysql
 import os
+import logging
 
-mysql_server="subtracker-db.mysql.database.azure.com"
+mysql_server="subtrackerdb.mysql.database.azure.com"
 sql_database="subtracker_api"
-sql_user='sql_admin'
+sql_user='subtracker_rwx@subtrackerdb'
 sql_pass=os.environ['sql_pass']
 
-cnx = pymysql.connect(user=sql_user, passwd=sql_pass, host=mysql_server, database=sql_database,ssl={'ca': 'DigiCertGlobalRootCA.crt.pem'})
+logger = logging.getLogger(__name__)
+
+
+#,ssl={'ca': 'DigiCertGlobalRootCA.crt.pem'})
 
 app = Flask(__name__)
 
@@ -32,10 +36,14 @@ ________________
 
 @app.route('/api/services/all', methods=['GET'])
 def get_services_all():
-    cur = cnx.cursor()
-    cur.execute('''select * from services''')
-    data = [dict((cur.description[idx][0], value) 
-                for idx, value in enumerate(row)) for row in cur.fetchall()]
+    try:
+        cnx = pymysql.connect(user=sql_user, passwd=sql_pass, host=mysql_server, database=sql_database)
+        cur = cnx.cursor()
+        cur.execute('''select * from services''')
+        data = [dict((cur.description[idx][0], value) 
+                    for idx, value in enumerate(row)) for row in cur.fetchall()]
+    finally:
+        cnx.close()
     return jsonify(data)
 
 @app.route('/api/services/search', methods=['GET'])
@@ -58,27 +66,38 @@ def get_services():
         return page_not_found(404)
 
     query = query[:-3] + ';'
-    cur = cnx.cursor()
-    cur.execute(query, to_filter)
-    data = [dict((cur.description[idx][0], value) 
-                for idx, value in enumerate(row)) for row in cur.fetchall()]
+    try:
+        cnx = pymysql.connect(user=sql_user, passwd=sql_pass, host=mysql_server, database=sql_database)
+        cur = cnx.cursor()
+        cur.execute(query, to_filter)
+        data = [dict((cur.description[idx][0], value) 
+                    for idx, value in enumerate(row)) for row in cur.fetchall()]
+    finally:
+        cnx.close()
     return jsonify(data)
     #return str(query)
 
 @app.route('/api/subscriptions', methods=['GET'])
 def get_subscriptions():
-    cur = cnx.cursor()
-    cur.execute('''select * from subscriptions''')
-    data = [dict((cur.description[idx][0], value) 
-                for idx, value in enumerate(row)) for row in cur.fetchall()]
+    try:
+        cur = cnx.cursor()
+        cur.execute('''select * from subscriptions''')
+        data = [dict((cur.description[idx][0], value) 
+                    for idx, value in enumerate(row)) for row in cur.fetchall()]
+    finally:
+        cnx.close()
     return jsonify(data)
 
 @app.route('/api/customers/all', methods=['GET'])
 def get_customers_all():
-    cur = cnx.cursor()
-    cur.execute('''select * from customers''')
-    data = [dict((cur.description[idx][0], value) 
-                for idx, value in enumerate(row)) for row in cur.fetchall()]
+    try:
+        cnx = pymysql.connect(user=sql_user, passwd=sql_pass, host=mysql_server, database=sql_database)
+        cur = cnx.cursor()
+        cur.execute('''select * from customers''')
+        data = [dict((cur.description[idx][0], value) 
+                    for idx, value in enumerate(row)) for row in cur.fetchall()]
+    finally:
+        cnx.close()
     return jsonify(data)
 
 @app.route('/api/customers/search', methods=['GET'])
@@ -109,15 +128,18 @@ def get_customers():
         return page_not_found(404)
 
     query = query[:-3] + ';'
-    cur = cnx.cursor()
-    cur.execute(query, to_filter)
-    data = [dict((cur.description[idx][0], value) 
-                for idx, value in enumerate(row)) for row in cur.fetchall()]
+    try:
+        cnx = pymysql.connect(user=sql_user, passwd=sql_pass, host=mysql_server, database=sql_database)
+        cur = cnx.cursor()
+        cur.execute(query, to_filter)
+        data = [dict((cur.description[idx][0], value) 
+                    for idx, value in enumerate(row)) for row in cur.fetchall()]
+    finally:
+        cnx.close()
     return jsonify(data)
-    #return str(query)
 
 @app.route('/api/customers/create', methods=['GET']) ##This should be a POST 
-def create_customers():
+def create_customer():
     query_parameters = request.args
 
     customer_oauth_id = query_parameters.get('customer_oauth_id')
@@ -127,37 +149,56 @@ def create_customers():
     customer_firstname = query_parameters.get('customer_firstname')
     customer_lastname = query_parameters.get('customer_lastname')
 
-    query = "INSERT INTO customers Values ("
+    query = "INSERT INTO customers ("
     to_filter = []
+    numvals = 0
 
     if customer_email:
         query += ' customer_email, '
         to_filter.append(customer_email)
+        numvals += 1
+
     if customer_oauth_id:
         query += ' customer_oauth_id, '
         to_filter.append(customer_oauth_id)
+        numvals += 1
+
     if customer_firstname:
         query += ' customer_firstname, '
         to_filter.append(customer_firstname)
+        numvals += 1
+
     if customer_lastname:
         query += ' customer_lastname, '
         to_filter.append(customer_lastname)
+        numvals += 1
+
     if customer_phone:
         query += ' customer_phone, '
         to_filter.append(customer_phone)
+        numvals += 1
+
     if customer_status:
         query += ' customer_status, '
         to_filter.append(customer_status)
+        numvals += 1
+
     if not (customer_oauth_id or customer_email or customer_firstname or customer_lastname):
         return page_not_found(404)
 
+    query = query[:-2] + ') VALUES ('
+    for i in range(0, numvals):
+        query = query + ' %s, '
     query = query[:-2] + ')'
-    cur = cnx.cursor()
-    #cur.execute(query, to_filter)
-    #data = [dict((cur.description[idx][0], value) 
-    #            for idx, value in enumerate(row)) for row in cur.fetchall()]
-    #return jsonify(data)
-    return str(query)
 
-
-  #  http://127.0.0.1:5000/api/customers/create?customer_firstname=Jason&customer_lastname=Semon&customer_email=jason.semon@gmail.com&customer_oauth_id=1233456789
+    to_filter = tuple(to_filter)
+    try:
+        cnx = pymysql.connect(user=sql_user, passwd=sql_pass, host=mysql_server, database=sql_database)
+        cur = cnx.cursor()
+        cur.execute(query, to_filter)
+        data = [dict((cur.description[idx][0], value) 
+                    for idx, value in enumerate(row)) for row in cur.fetchall()]
+        cnx.commit()
+    finally:
+        cnx.close()
+    return ""
