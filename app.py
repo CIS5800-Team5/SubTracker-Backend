@@ -11,9 +11,6 @@ sql_pass=os.environ['sql_pass']
 
 logger = logging.getLogger(__name__)
 
-
-#,ssl={'ca': 'DigiCertGlobalRootCA.crt.pem'})
-
 app = Flask(__name__)
 
 @app.route('/', methods=['GET'])
@@ -42,9 +39,11 @@ def get_services_all():
         cur.execute('''select * from services''')
         data = [dict((cur.description[idx][0], value) 
                     for idx, value in enumerate(row)) for row in cur.fetchall()]
+    except:
+        return str("An error occurred")
     finally:
         cnx.close()
-    return jsonify(data)
+        return jsonify(data)
 
 @app.route('/api/services/search', methods=['GET'])
 def get_services():
@@ -72,21 +71,64 @@ def get_services():
         cur.execute(query, to_filter)
         data = [dict((cur.description[idx][0], value) 
                     for idx, value in enumerate(row)) for row in cur.fetchall()]
+    except:
+        return str("An error occurred")
     finally:
         cnx.close()
-    return jsonify(data)
-    #return str(query)
+        return jsonify(data)
 
-@app.route('/api/subscriptions', methods=['GET'])
+@app.route('/api/subscriptions/all', methods=['GET'])
 def get_subscriptions():
     try:
         cur = cnx.cursor()
         cur.execute('''select * from subscriptions''')
         data = [dict((cur.description[idx][0], value) 
                     for idx, value in enumerate(row)) for row in cur.fetchall()]
+    except:
+        return str("An error occurred")
     finally:
         cnx.close()
-    return jsonify(data)
+        return jsonify(data)
+
+@app.route('/api/subscriptions/search', methods=['GET'])
+def get_customers():
+    query_parameters = request.args
+
+    customer_id = query_parameters.get('subscription_id')
+    customer_email = query_parameters.get('customer_id')
+    customer_phone = query_parameters.get('service_id')
+    customer_status = query_parameters.get('customer_status')
+
+    query = "SELECT * FROM services WHERE"
+    to_filter = []
+
+    if customer_id:
+        query += ' customer_id=%s AND'
+        to_filter.append(customer_id)
+    if customer_email:
+        query += ' customer_email=%s AND'
+        to_filter.append(customer_email)
+    if customer_phone:
+        query += ' customer_phone=%s AND'
+        to_filter.append(customer_phone)
+    if customer_status:
+        query += ' customer_status=%s AND'
+        to_filter.append(customer_status)
+    if not (customer_id or customer_email or customer_phone):
+        return page_not_found(404)
+
+    query = query[:-3] + ';'
+    try:
+        cnx = pymysql.connect(user=sql_user, passwd=sql_pass, host=mysql_server, database=sql_database)
+        cur = cnx.cursor()
+        cur.execute(query, to_filter)
+        data = [dict((cur.description[idx][0], value) 
+                    for idx, value in enumerate(row)) for row in cur.fetchall()]
+    except:
+        return str("An error occurred")
+    finally:
+        cnx.close()
+        return jsonify(data)
 
 @app.route('/api/customers/all', methods=['GET'])
 def get_customers_all():
