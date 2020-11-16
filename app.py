@@ -14,8 +14,21 @@ app = Flask(__name__)
 
 @app.route('/', methods=['GET'])
 def home():
-    return '''<h1>Subtracker API</h1>
-<p>An API for using the subtracker application</p>'''
+    return '''<p><pre>
+________________
+ ____        _   _____               _             
+/ ___| _   _| |_|_   _| __ __ _  ___| | _____ _ __ 
+\___ \| | | | '_ \| || '__/ _` |/ __| |/ / _ \ '__|
+ ___) | |_| | |_) | || | | (_| | (__|   <  __/ |   
+|____/ \__,_|_.__/|_||_|  \__,_|\___|_|\_\___|_|   
+                  ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾
+   _____ __________.___ 
+  /  _  \\______   \   |
+ /  /_\  \|     ___/   |
+/    |    \    |   |   |
+\____|__  /____|   |___|
+        \/              
+</pre><p>An API for using the SubTracker application</p>'''
 
 @app.route('/api/services/all', methods=['GET'])
 def get_services_all():
