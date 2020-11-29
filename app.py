@@ -291,11 +291,6 @@ def create_customer():
         to_filter.append(customer_phone)
         numvals += 1
 
-    if customer_status:
-        query += ' customer_status, '
-        to_filter.append(customer_status)
-        numvals += 1
-
     if not (customer_email):
         return page_not_found(404)
 
