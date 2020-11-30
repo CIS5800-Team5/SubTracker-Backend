@@ -299,7 +299,7 @@ def get_customer_subscriptions():
         if not data:
             return str("No data returned")
         else:
-            return jsonify(data)
+            return json.dumps(data,default=decimal_default)
 
 
 @app.route('/api/customers/create', methods=['POST'])
