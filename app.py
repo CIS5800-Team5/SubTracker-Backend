@@ -201,6 +201,7 @@ def get_subscriptions_search():
         to_filter.append(service_name)
 
     query = query[:-3] + ';'
+    logger.debug(query)
     try:
         cnx = pymysql.connect(user=sql_user, passwd=sql_pass, host=mysql_server, database=sql_database)
         cur = cnx.cursor()
@@ -270,6 +271,36 @@ def get_customers_search():
             return str("No data returned")
         else:
             return jsonify(data)
+
+@app.route('/api/customers/getsubscriptions', methods=['GET'])
+def get_customer_subscriptions():
+    query_parameters = request.args
+
+    customer_email = query_parameters.get('customer_email')
+
+    query = "SELECT customers.customer_email, services.service_name, subscriptions.subscription_cost, subscriptions.subscription_renewal FROM customers join subscriptions ON customers.customer_id = subscriptions.customer_id join services ON subscriptions.service_id = services.service_id WHERE"
+    to_filter=[]
+
+    if customer_email:
+        query += ' customer_email=%s'
+        to_filter.append(customer_email)
+
+    if not (customer_email):
+        return ("Invalid request")
+
+    try:
+        cnx = pymysql.connect(user=sql_user, passwd=sql_pass, host=mysql_server, database=sql_database)
+        cur = cnx.cursor()
+        cur.execute(query, to_filter)
+        data = [dict((cur.description[idx][0], value) 
+            for idx, value in enumerate(row)) for row in cur.fetchall()]
+    finally:
+        cnx.close()
+        if not data:
+            return str("No data returned")
+        else:
+            return jsonify(data)
+
 
 @app.route('/api/customers/create', methods=['POST'])
 def create_customer():
