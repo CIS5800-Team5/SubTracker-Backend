@@ -4,6 +4,7 @@ import pymysql
 import os
 import logging
 import json, decimal
+import datetime
 
 mysql_server="subtrackerdb.mysql.database.azure.com"
 sql_database="subtracker_api"
@@ -15,10 +16,12 @@ logger = logging.getLogger(__name__)
 app = Flask(__name__)
 
 #decimal type converter
-def decimal_default(obj):
-     if isinstance(obj, decimal.Decimal):
-         return float(obj)
-     raise TypeError
+def format_converter(obj):
+    if isinstance(obj, decimal.Decimal):
+        return float(obj)
+    if isinstance(obj, (datetime.date, datetime.datetime)):
+        return obj.isoformat()
+    raise TypeError
 
 @app.route('/', methods=['GET'])
 
@@ -135,12 +138,12 @@ def create_subscription():
         to_filter.append(subscription_cost)
         numvals += 1
 
-    if subsription_renewal:
-        query += ' subsription_renewal, '
-        to_filter.append(subsription_renewal)
+    if subscription_renewal:
+        query += ' subscription_renewal, '
+        to_filter.append(subscription_renewal)
         numvals += 1
 
-    if not (customer_id or service_id or subscription_cost or subsription_renewal):
+    if not (customer_id or service_id or subscription_cost or subscription_renewal):
         return page_not_found(404)
 
     query = query[:-2] + ') VALUES ('
@@ -214,7 +217,7 @@ def get_subscriptions_search():
         if not data:
             return str("No data returned")
         else:
-            return json.dumps(data,default=decimal_default)
+            return json.dumps(data,default=format_converter)
 
 @app.route('/api/customers/all', methods=['GET'])
 def get_customers_all():
@@ -299,7 +302,7 @@ def get_customer_subscriptions():
         if not data:
             return str("No data returned")
         else:
-            return json.dumps(data,default=decimal_default)
+            return json.dumps(data,default=format_converter)
 
 
 @app.route('/api/customers/create', methods=['POST'])
