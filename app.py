@@ -114,51 +114,25 @@ def get_subscriptions():
 @app.route('/api/subscriptions/create', methods=['POST'])
 def create_subscription():
     query_parameters = request.args
-    customer_id = query_parameters.get('customer_id')
-    service_id = query_parameters.get('service_id')
+    customer_email = query_parameters.get('customer_email')
+    service_name = query_parameters.get('service_name')
     subscription_cost = query_parameters.get('subscription_cost')
     subscription_renewal = query_parameters.get('subscription_renewal')
 
-    query = "INSERT INTO subscriptions ("
-    to_filter = []
-    numvals = 0
+    if not (customer_email and service_name and subscription_cost and subscription_renewal):
+        return ("Invalid request")
+    else:
+        query = "INSERT INTO subscriptions (customer_id, service_id, subscription_cost, subscription_renewal) VALUES ((SELECT customer_id FROM customers WHERE customer_email = '" + customer_email + "'), (SELECT service_id FROM services WHERE service_name = '" + service_name + "'), '"+ subscription_cost + "', '"+ subscription_renewal + "');"
 
-    if customer_id:
-        query += ' customer_id, '
-        to_filter.append(customer_id)
-        numvals += 1
+    print(query);
 
-    if service_id:
-        query += ' service_id, '
-        to_filter.append(service_id)
-        numvals += 1
-
-    if subscription_cost:
-        query += ' subscription_cost, '
-        to_filter.append(subscription_cost)
-        numvals += 1
-
-    if subscription_renewal:
-        query += ' subscription_renewal, '
-        to_filter.append(subscription_renewal)
-        numvals += 1
-
-    if not (customer_id or service_id or subscription_cost or subscription_renewal):
-        return page_not_found(404)
-
-    query = query[:-2] + ') VALUES ('
-    for i in range(0, numvals):
-        query = query + ' %s, '
-    query = query[:-2] + ')'
-
-    to_filter = tuple(to_filter)
     try:
         cnx = pymysql.connect(user=sql_user, passwd=sql_pass, host=mysql_server, database=sql_database)
         cur = cnx.cursor()
-        cur.execute(query, to_filter)
-        data = [dict((cur.description[idx][0], value) 
-                    for idx, value in enumerate(row)) for row in cur.fetchall()]
+        print(cur.mogrify(query))
+        cur.execute(query)
         cnx.commit()
+        
     finally:
         cnx.close()
     return ""
@@ -302,7 +276,7 @@ def get_customer_subscriptions():
         if not data:
             return str("No data returned")
         else:
-            return json.dumps(data,default=format_converter)
+            return json.dumps(data,default=format_converter )
 
 
 @app.route('/api/customers/create', methods=['POST'])
