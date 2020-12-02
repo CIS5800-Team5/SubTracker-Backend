@@ -20,7 +20,7 @@ def format_converter(obj):
     if isinstance(obj, decimal.Decimal):
         return float(obj)
     if isinstance(obj, (datetime.date, datetime.datetime)):
-        return obj.isoformat()
+        return obj.strftime('%Y-%m-%d')
     raise TypeError
 
 @app.route('/', methods=['GET'])
@@ -123,8 +123,6 @@ def create_subscription():
         return ("Invalid request")
     else:
         query = "INSERT INTO subscriptions (customer_id, service_id, subscription_cost, subscription_renewal) VALUES ((SELECT customer_id FROM customers WHERE customer_email = '" + customer_email + "'), (SELECT service_id FROM services WHERE service_name = '" + service_name + "'), '"+ subscription_cost + "', '"+ subscription_renewal + "');"
-
-    print(query);
 
     try:
         cnx = pymysql.connect(user=sql_user, passwd=sql_pass, host=mysql_server, database=sql_database)
