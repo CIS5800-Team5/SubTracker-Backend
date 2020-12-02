@@ -138,16 +138,17 @@ def create_subscription():
 @app.route('/api/subscriptions/delete', methods=['POST'])
 def delete_subscription():
     query_parameters = request.args
+    customer_email = query_parameters.get('customer_email')
     subscription_id = query_parameters.get('subscription_id')
 
-    query = "DELETE from subscriptions where subscription_id=" + subscription_id + ";"
-
-    if not (subscription_id):
-        return ("Invalid data")
-
+    if not (customer_email and subscription_id):
+        return ("Invalid request")
+    else:
+        query = "DELETE FROM subscriptions WHERE subscription_id = " + subscription_id + " AND customer_id = (SELECT customer_id FROM customers WHERE customer_email = '" + customer_email + "');"
     try:
         cnx = pymysql.connect(user=sql_user, passwd=sql_pass, host=mysql_server, database=sql_database)
         cur = cnx.cursor()
+        print(cur.mogrify(query))
         cur.execute(query)
         cnx.commit()
         return ("Deletion Successful")
