@@ -254,7 +254,7 @@ def get_customer_subscriptions():
 
     customer_email = query_parameters.get('customer_email')
 
-    query = "SELECT subscriptions.subscription_id, customers.customer_email, services.service_name, subscriptions.subscription_cost, subscriptions.subscription_renewal FROM customers join subscriptions ON customers.customer_id = subscriptions.customer_id join services ON subscriptions.service_id = services.service_id WHERE"
+    query = "SELECT subscriptions.subscription_id, customers.customer_email, services.service_name, services.service_url, subscriptions.subscription_cost, subscriptions.subscription_renewal FROM customers join subscriptions ON customers.customer_id = subscriptions.customer_id join services ON subscriptions.service_id = services.service_id WHERE"
     to_filter=[]
 
     if customer_email:
